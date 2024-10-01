@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket.IO Client</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+  </head>
+  <body>
+    <h1>Socket.IO Client</h1>
+    <h3 id="dateTime"></h3>
+    <button onclick="getUsers()">Get Users</button>
+    <ul id="user-list"></ul>
+
+    <script>
+      const socket = io("http://127.0.0.1:5000", {
+        transports: ["polling", "websocket"],
+        reconnection: true,
+      });
+
+      socket.on("connect", () => {
+        console.log("Connected to Socket.IO server");
+      });
+
+      socket.on("user_data", (data) => {
+        console.log("User data received:", data);
+        const userList = document.getElementById("user-list");
+        userList.innerHTML = ""; // Clear previous list
+        data.data.forEach((user) => {
+          const li = document.createElement("li");
+          li.textContent = `ID: ${user[0]}, Name: ${user[1]}`; // Adjust based on your DB structure
+          userList.appendChild(li);
+        });
+      });
+
+      socket.on("error", (error) => {
+        console.error("Socket.IO Error:", error);
+      });
+
+      function getUsers() {
+        socket.emit("get_users");
+      }
+      setInterval(getUsers, 1000);
+      setInterval(() => {
+        const dateTimeElement = document.getElementById("dateTime");
+        dateTimeElement.textContent = new Date().toLocaleString();
+      }, 1000);
+    </script>
+  </body>
+</html>
